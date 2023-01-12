@@ -42,14 +42,15 @@ fn main() -> ! {
     // Disable the RTC and TIMG watchdog timers
     let mut rtc = Rtc::new(peripherals.RTC_CNTL);
     let timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks);
-    let mut wdt0 = timer_group0.wdt;
+    let mut doggy = timer_group0.wdt;
     let timer_group1 = TimerGroup::new(peripherals.TIMG1, &clocks);
     let mut wdt1 = timer_group1.wdt;
 
     rtc.swd.disable();
     rtc.rwdt.disable();
-    wdt0.disable();
     wdt1.disable();
+
+    doggy.start(10u64.secs());
 
     println!("starting eclss");
 
@@ -71,6 +72,9 @@ fn main() -> ! {
 
     // Poll for data
     loop {
+        // mustn't forget to feed the doggy!
+        doggy.feed();
+
         // Keep looping until ready
         match scd30.data_ready() {
             Ok(true) => {}
